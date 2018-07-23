@@ -232,13 +232,13 @@ class TreeView : AdapterView<TreeAdapter<*>>, GestureDetector.OnGestureListener 
     }
 
     private fun drawLines(canvas: Canvas, treeNode: TreeNode) {
-        if (treeNode.hasChildren()) {
+        if (treeNode.hasChildren) {
             for (child in treeNode.children) {
                 drawLines(canvas, child)
             }
         }
 
-        if (treeNode.hasParent()) {
+        if (treeNode.hasParent) {
             mLinePath.reset()
 
             val parent = treeNode.parent

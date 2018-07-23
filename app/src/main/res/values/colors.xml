@@ -3,4 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <!--Background Color-->
+    <color name="colorABO">#308030</color>
+    <color name="colorOnMember">#303080</color>
+    <color name="colorOffMember">#303030</color>
 </resources>

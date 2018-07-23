@@ -10,7 +10,7 @@
 
 
     <com.lgsdiamond.amtree.TreeView.TreeView
-        android:id="@+id/tvMain"
+        android:id="@+id/teeviewMain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:lineColor="@android:color/holo_blue_dark"/>

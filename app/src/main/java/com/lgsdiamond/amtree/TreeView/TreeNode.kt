@@ -8,7 +8,7 @@ interface TreeNodeObserver {
     fun notifyNodeRemoved(node: TreeNode, parent: TreeNode)
 }
 
-class TreeNode @JvmOverloads constructor(private var mData: Any? = null) {
+open class TreeNode @JvmOverloads constructor(private var mData: Any? = null) {
     var x: Int = 0
     var y: Int = 0
     var width: Int = 0
@@ -46,9 +46,12 @@ class TreeNode @JvmOverloads constructor(private var mData: Any? = null) {
         this.height = height
     }
 
-    fun hasData(): Boolean {
-        return mData != null
-    }
+    val hasData: Boolean
+        get() = (mData != null)
+    val hasChildren: Boolean
+        get() = mChildren.isNotEmpty()
+    val hasParent: Boolean
+        get() = (parent != null)
 
     private fun notifyParentNodeCountChanged() {
         if (parent != null) {
@@ -69,7 +72,7 @@ class TreeNode @JvmOverloads constructor(private var mData: Any? = null) {
         return nodeCount
     }
 
-    fun addChild(child: TreeNode) {
+    open fun addChild(child: TreeNode) {
         mChildren.add(child)
         child.parent = this
 
@@ -99,14 +102,6 @@ class TreeNode @JvmOverloads constructor(private var mData: Any? = null) {
         for (observer in treeNodeObservers) {
             observer.notifyNodeRemoved(child, this)
         }
-    }
-
-    fun hasChildren(): Boolean {
-        return !mChildren.isEmpty()
-    }
-
-    fun hasParent(): Boolean {
-        return parent != null
     }
 
     internal fun addTreeNodeObserver(observer: TreeNodeObserver) {

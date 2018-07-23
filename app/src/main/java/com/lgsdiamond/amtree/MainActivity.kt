@@ -1,34 +1,39 @@
 package com.lgsdiamond.amtree
 
+import android.content.Context
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.design.widget.Snackbar
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.CardView
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast.LENGTH_SHORT
-import com.lgsdiamond.amtree.Amway.ABO
+import com.lgsdiamond.amtree.Amway.*
 import com.lgsdiamond.amtree.TreeView.BaseTreeAdapter
 import com.lgsdiamond.amtree.TreeView.TreeNode
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
+lateinit var gMainActivity: MainActivity
+val gMainContext: Context by lazy { gMainActivity.applicationContext }
+
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+
+    init {
+        gMainActivity = this@MainActivity
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }
 
         val toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
@@ -39,8 +44,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         //
         initTrees()
-        //
-        initMembers()
     }
 
     override fun onBackPressed() {
@@ -103,11 +106,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             override fun onBindViewHolder(viewHolder: ViewHolder, data: Any, position: Int) {
-                viewHolder.mTextView.text = data.toString()
+                val backColor = when (data) {
+                    is ABO -> colorABO
+                    is OnMember -> colorOnMember
+                    is OffMember -> colorOffMember
+                    else -> 0x000000
+                }
+
+                viewHolder.mTreeviewMain.setBackgroundColor(backColor)
+                if (data is Member) {
+                    viewHolder.mTextTitle.text = data.toTitle()
+                    viewHolder.mTextDesc.text = data.toDesc()
+                } else {
+                    viewHolder.mTextTitle.text = data.toString()
+                    viewHolder.mTextDesc.text = "Not a Member"
+                }
             }
         }
 
-        tvMain.setAdapter(adapter)
+        teeviewMain.setAdapter(adapter)
         btnAddNode.setOnClickListener {
             if (mCurrentNode != null) {
                 mCurrentNode!!.addChild(TreeNode(getNodeText()))
@@ -117,87 +134,61 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         // example tree
-        mCurrentNode = TreeNode(getNodeText())
-        mCurrentNode!!.addChild(TreeNode(getNodeText()))
-        val child3 = TreeNode(getNodeText())
-        child3.addChild(TreeNode(getNodeText()))
-        val child6 = TreeNode(getNodeText())
-        child6.addChild(TreeNode(getNodeText()))
-        child6.addChild(TreeNode(getNodeText()))
-        child3.addChild(child6)
-        mCurrentNode!!.addChild(child3)
-        val child4 = TreeNode(getNodeText())
-        child4.addChild(TreeNode(getNodeText()))
-        child4.addChild(TreeNode(getNodeText()))
-        mCurrentNode!!.addChild(child4)
-
+        mCurrentNode = AmNode(ABO("S"))
         adapter.setRootNode(mCurrentNode!!)
-        tvMain.setOnItemClickListener { parent, view, position, id ->
-            mCurrentNode = adapter.getNode(position)
-            Snackbar.make(tvMain, "Clicked on " + mCurrentNode!!.data!!.toString(), LENGTH_SHORT).show()
-        }
-
-    }
-
-    fun initMembers() {
-        val mySelf = ABO("TopABO-A", 0)
-        mySelf.addDummyABO(10f).addDummyABO(10f).addDummyOnMember(10f).addDummyOnMember(10f).addDummyOffMember(10f).addDummyOnMember(10f).addDummyABO(10f)
-                .newDummyABO(10f).addDummyOnMember(10f).addDummyOnMember(10f).addDummyOffMember(10f).addDummyOnMember(10f).addDummyOnMember(10f)
-        val yourSelf = ABO("TopABO-B", 1)
-        yourSelf.addDummyABO(20f).addDummyABO(20f).addDummyOnMember(20f).addDummyOnMember(20f).addDummyOffMember(20f).addDummyOnMember(20f).addDummyABO(20f)
-                .newDummyABO(20f).addDummyOnMember(20f).addDummyOnMember(20f).addDummyOffMember(20f).addDummyOnMember(20f).addDummyOnMember(20f)
-
-        // basic network
-
-        val basicSponsor = ABO("Sponsor", 100)
-        val basicYou = ABO("You", 101)
-        val basicA = ABO("A", 102)
-        val basicB = ABO("B", 103)
-
-        basicSponsor.addSubMember(basicYou, 20.0f)
-        basicYou.addSubMember(basicA, 20.0f)
-        basicYou.addSubMember(basicB, 20.0f)
 
         // 6-4-2 Model. step-1
-        val you = ABO("You", 1000)
-        you.addPV(20.0f)
+        val you = ABO("You")
+        mCurrentNode!!.addChild(AmNode(you))
+
+        val yourNode = you.amNode
+
         for (i in 1..6) {
-            you.addDummyABO(20.0f)
+            yourNode.addChild(AmNode(ABO("A-$i")))
         }
         var bonus = you.computeFirstBonus()
 
         // 6-4-2 Model. step-2
-        for (abo in you.subMembers) {
+        for (child in yourNode.children) {
             for (i in 1..4) {
-                (abo as ABO).addDummyABO(20.0f)
+                child.addChild(AmNode(ABO("B-$i")))
             }
         }
         bonus = you.computeFirstBonus()
 
         // 6-4-2 Model. step-3
-        for (abo in you.subMembers) {
-            for (subABO in (abo as ABO).subMembers) {
+        for (son in yourNode.children) {
+            for (grandSon in son.children) {
                 for (i in 1..2) {
-                    (subABO as ABO).addDummyABO(20.0f)
+                    grandSon.addChild(AmNode(ABO("C-$i")))
                 }
             }
         }
         bonus = you.computeFirstBonus()
+
+        teeviewMain.setOnItemClickListener { parent, view, position, id ->
+            mCurrentNode = adapter.getNode(position)
+            Snackbar.make(teeviewMain, "Clicked on " + mCurrentNode!!.data!!.toString(), LENGTH_SHORT).show()
+        }
+
     }
 
     private var mCurrentNode: TreeNode? = null
     private var nodeCount = 0
 
     private inner class ViewHolder(view: View) {
-        internal var mTextView: TextView
-
-        init {
-            mTextView = view.findViewById(R.id.textView)
-        }
+        var mTextTitle: TextView = view.findViewById(R.id.tvNodeTitle)
+        var mTextDesc: TextView = view.findViewById(R.id.tvNodeDesc)
+        var mTreeviewMain: CardView = view.findViewById(R.id.card_view)
     }
 
     private fun getNodeText(): String {
         return "Node " + nodeCount++
     }
 
+    companion object {
+        val colorABO: Int by lazy { ContextCompat.getColor(gMainContext, R.color.colorABO) }
+        val colorOnMember: Int by lazy { ContextCompat.getColor(gMainContext, R.color.colorOnMember) }
+        val colorOffMember: Int by lazy { ContextCompat.getColor(gMainContext, R.color.colorOffMember) }
+    }
 }

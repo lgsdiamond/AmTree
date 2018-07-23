@@ -205,14 +205,14 @@ class BuchheimWalkerAlgorithm @JvmOverloads constructor(private val mConfigurati
     }
 
     private fun nextRight(node: TreeNode): TreeNode? {
-        return if (node.hasChildren()) {
+        return if (node.hasChildren) {
             getRightMostChild(node)
         } else getNodeData(node).thread
 
     }
 
     private fun nextLeft(node: TreeNode): TreeNode? {
-        return if (node.hasChildren()) {
+        return if (node.hasChildren) {
             getLeftMostChild(node)
         } else getNodeData(node).thread
 
